@@ -111,7 +111,7 @@ export type ApplicationProps = EnvironmentConfig &
 
 const applicationProps: ApplicationProps = {
   environments: environmentConfig,
-  ghRepository: `${githubOwner}/${projectName}`,
+  ghRepository: "cristianmagana/microserviceB",
   codeStarConnectionArn,
   name: projectName,
   codeArtifactDomain: codeArtifactConfig.codeArtifactDomain,
