@@ -1,21 +1,122 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
-import { MicroserviceBStack } from '../lib/microservice_b-stack';
+import "source-map-support/register";
+import * as cdk from "aws-cdk-lib";
+import { MicroserviceBStack } from "../lib/microservice_b-stack";
 
 const app = new cdk.App();
-new MicroserviceBStack(app, 'MicroserviceBStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+type AccountConfig = {
+  name: string;
+  account: string;
+  region: string;
+  branch?: string;
+};
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+type EnvironmentConfig = {
+  env: AccountConfig;
+};
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+type CodeArtifactProps = {
+  codeArtifactRepo: string;
+  codeArtifactDomain: string;
+};
+
+type PipelineAppProps = {
+  name: string;
+  ghRepository: string;
+} & CodeArtifactProps;
+
+export type MicroServiceProps = { lambdaName: string } & EnvironmentConfig;
+
+const projectName = "microserviceB";
+const githubOwner = "cristianmagana";
+const codeStarConnectionArn =
+  "arn:aws:codestar-connections:us-east-1:964108025908:connection/813402cd-cb3d-405e-8fe3-b52a2a27c327";
+
+const buildConfig = {
+  env: {
+    name: "build",
+    account: "964108025908",
+    region: "us-east-1",
+  },
+};
+
+const environmentConfig: MicroServiceProps[] = [
+  {
+    env: {
+      name: "dev",
+      account: "574061284422",
+      region: "us-east-1",
+      branch: "master",
+    },
+    lambdaName: "microservice-B",
+  },
+  {
+    env: {
+      name: "dev",
+      account: "574061284422",
+      region: "us-west-2",
+      branch: "master",
+    },
+    lambdaName: "microservice-B",
+  },
+  {
+    env: {
+      name: "uat",
+      account: "871495003945",
+      region: "us-east-1",
+      branch: "master",
+    },
+    lambdaName: "microservice-B",
+  },
+  {
+    env: {
+      name: "uat",
+      account: "871495003945",
+      region: "us-west-2",
+      branch: "master",
+    },
+    lambdaName: "microservice-B",
+  },
+  {
+    env: {
+      name: "prod",
+      account: "248758679486",
+      region: "us-east-1",
+      branch: "master",
+    },
+    lambdaName: "microservice-B",
+  },
+  {
+    env: {
+      name: "prod",
+      account: "248758679486",
+      region: "us-west-2",
+      branch: "master",
+    },
+    lambdaName: "microservice-B",
+  },
+];
+
+const codeArtifactConfig: CodeArtifactProps = {
+  codeArtifactDomain: "digitalxtian-com",
+  codeArtifactRepo: "aws-cdk",
+};
+
+export type ApplicationProps = EnvironmentConfig &
+  PipelineAppProps & {
+    environments: MicroServiceProps[];
+    codeStarConnectionArn: string;
+  };
+
+const applicationProps: ApplicationProps = {
+  environments: environmentConfig,
+  ghRepository: `${githubOwner}/${projectName}`,
+  codeStarConnectionArn,
+  name: projectName,
+  codeArtifactDomain: codeArtifactConfig.codeArtifactDomain,
+  codeArtifactRepo: codeArtifactConfig.codeArtifactRepo,
+  ...buildConfig,
+};
+
+new MicroserviceBStack(app, "MicroserviceBStack", applicationProps);

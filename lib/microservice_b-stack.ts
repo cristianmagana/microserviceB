@@ -1,16 +1,53 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
+import { createPipeline } from "@digitalxtian/aws-cdk-pipeline";
+import { ApplicationProps } from "../bin/microservice_b";
+import { Stack, Stage } from "aws-cdk-lib";
+import { MainStack } from "./mainStack";
+import { DevStage } from "./devStage";
+import { UatStage } from "./uatStage";
+import { ProdStage } from "./prodStage";
 
-export class MicroserviceBStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class MicroserviceBStack extends Stack {
+  constructor(scope: Construct, id: string, props: ApplicationProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const { pipeline, devEnvironment, uatEnvironment, prodEnvironment } =
+      createPipeline(this, "microserviceB-pipeline", {
+        name: `${props.name}-pipeline`,
+        ghRepository: props.ghRepository,
+        codeArtifactDomain: props.codeArtifactDomain,
+        codeArtifactRepo: props.codeArtifactRepo,
+        env: {
+          name: props.env.name,
+          account: props.env.account,
+          region: props.env.region,
+          branch: "master",
+        },
+      });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'MicroserviceBQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const devEnvs = props.environments.filter(
+      (environments) => environments.env.name === "dev"
+    );
+    for (const devEnv of devEnvs)
+      devEnvironment.addStage(
+        new DevStage(this, `dev-stage-${devEnv.env.region}`, props)
+      );
+
+    const uatEnvs = props.environments.filter(
+      (environments) => environments.env.name === "uat"
+    );
+    for (const uatEnv of uatEnvs)
+      uatEnvironment.addStage(
+        new UatStage(this, `uat-stage-${uatEnv.env.region}`, props)
+      );
+
+    const prodEnvs = props.environments.filter(
+      (environments) => environments.env.name === "prod"
+    );
+    for (const prodEnv of prodEnvs)
+      uatEnvironment.addStage(
+        new ProdStage(this, `prod-stage-${prodEnv.env.region}`, props)
+      );
   }
 }
