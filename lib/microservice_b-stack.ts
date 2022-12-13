@@ -15,7 +15,7 @@ export class MicroserviceBStack extends Stack {
     const { pipeline, devEnvironment, uatEnvironment, prodEnvironment } =
       createPipeline(this, "microserviceB-pipeline", {
         name: `${props.name}-pipeline`,
-        ghRepository: props.ghRepository,
+        ghRepository: "cristianmagana/microserviceB",
         codeArtifactDomain: props.codeArtifactDomain,
         codeArtifactRepo: props.codeArtifactRepo,
         env: {
