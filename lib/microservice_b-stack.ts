@@ -46,7 +46,7 @@ export class MicroserviceBStack extends Stack {
       (environments) => environments.env.name === "prod"
     );
     for (const prodEnv of prodEnvs)
-      uatEnvironment.addStage(
+      prodEnvironment.addStage(
         new ProdStage(this, `prod-stage-${prodEnv.env.region}`, props)
       );
   }
