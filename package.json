@@ -11,7 +11,7 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@digitalxtian/aws-cdk-pipeline": "^1.3.7",
+    "@digitalxtian/aws-cdk-pipeline": "^1.3.9",
     "@types/jest": "^27.5.2",
     "@types/node": "10.17.27",
     "@types/prettier": "2.6.0",
