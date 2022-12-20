@@ -2,8 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { createPipeline } from "@digitalxtian/aws-cdk-pipeline";
 import { ApplicationProps } from "../bin/microservice_b";
-import { Stack, Stage } from "aws-cdk-lib";
-import { MainStack } from "./mainStack";
+import { Stack } from "aws-cdk-lib";
 import { DevStage } from "./devStage";
 import { UatStage } from "./uatStage";
 import { ProdStage } from "./prodStage";
@@ -27,27 +26,29 @@ export class MicroserviceBStack extends Stack {
       });
 
     const devEnvs = props.environments.filter(
-      (environments) => environments.env.name === "dev"
+      environments => environments.env.name === "dev"
     );
     for (const devEnv of devEnvs)
       devEnvironment.addStage(
-        new DevStage(this, `dev-stage-${devEnv.env.region}`, props)
+        new DevStage(this, `dev-stage-${devEnv.env.region}`, {...devEnv})
       );
 
     const uatEnvs = props.environments.filter(
-      (environments) => environments.env.name === "uat"
+      environments => environments.env.name === "uat"
     );
     for (const uatEnv of uatEnvs)
       uatEnvironment.addStage(
-        new UatStage(this, `uat-stage-${uatEnv.env.region}`, props)
+        new UatStage(this, `uat-stage-${uatEnv.env.region}`, {...uatEnv})
       );
 
     const prodEnvs = props.environments.filter(
-      (environments) => environments.env.name === "prod"
+      environments => environments.env.name === "prod"
     );
     for (const prodEnv of prodEnvs)
       prodEnvironment.addStage(
-        new ProdStage(this, `prod-stage-${prodEnv.env.region}`, props)
+        new ProdStage(this, `prod-stage-${prodEnv.env.region}`, {...prodEnv})
       );
+
+      pipeline.buildPipeline();
   }
 }
