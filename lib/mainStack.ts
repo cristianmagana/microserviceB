@@ -15,21 +15,12 @@ export class MainStack extends Stack {
 
       });
 
-      const postLambda = createNodeJsLambda(this,`${id}-post-lambda`, 
-      'lambda/coolMicroservice/src/postHandler/index.ts', {
-        functionName: 'postLambda',
-        handler: 'postHandler',
-      });
-
       const gatewayProps: ApiGatewayFullProps = {
         resources: [
           {
             resourceName: 'coolResource',
             methodGet: {
               lambda: getLambda
-            },
-            methodPost: {
-              lambda: postLambda
             },
           }
         ]
