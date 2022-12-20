@@ -9,7 +9,7 @@ export class CoolMicroservice extends Stack {
       super(scope, id, props);
   
       const getLambda = createNodeJsLambda(this, `${id}-get-lambda`, 
-      'lambda/coolMicroservice/src/getHandler', 
+      'lambda/coolMicroservice/src/getHandler/index.ts', 
       {
         functionName: 'getLambda',
         handler: 'getHandler',
@@ -17,7 +17,7 @@ export class CoolMicroservice extends Stack {
       });
 
       const postLambda = createNodeJsLambda(this,`${id}-post-lambda`, 
-      'lambda/coolMicroservice/src/getHandler', {
+      'lambda/coolMicroservice/src/getHandler/index.ts', {
         functionName: 'postLambda',
         handler: 'postHandler',
       });
