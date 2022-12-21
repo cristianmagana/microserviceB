@@ -21,10 +21,16 @@ type CodeArtifactProps = {
   codeArtifactDomain: string;
 };
 
+type LoadTestingProp = {
+  activateLambdaLoadTestings: boolean;
+  loadTestName: string;
+};
+
 type PipelineAppProps = {
   name: string;
   ghRepository: string;
-} & CodeArtifactProps;
+} & CodeArtifactProps &
+  LoadTestingProp;
 
 export type MicroServiceProps = { lambdaName: string } & EnvironmentConfig;
 
@@ -41,6 +47,10 @@ const buildConfig = {
   },
 };
 
+const loadTestingConfig: LoadTestingProp = {
+  activateLambdaLoadTestings: true,
+  loadTestName: "loadtest.yaml",
+};
 const environmentConfig: MicroServiceProps[] = [
   {
     env: {
@@ -114,8 +124,8 @@ const applicationProps: ApplicationProps = {
   ghRepository: "cristianmagana/microserviceB",
   codeStarConnectionArn,
   name: projectName,
-  codeArtifactDomain: codeArtifactConfig.codeArtifactDomain,
-  codeArtifactRepo: codeArtifactConfig.codeArtifactRepo,
+  ...codeArtifactConfig,
+  ...loadTestingConfig,
   ...buildConfig,
 };
 
