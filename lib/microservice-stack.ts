@@ -56,8 +56,8 @@ export class MicroserviceBStack extends Stack {
 
     const loadTestReportGroup = new ReportGroup(this, `LoadTestReportGroup-${props.env.region}`, {});
     const loadBuildTest = new CodeBuildStep(`${props.name}-load-testing-step`, {
-      installCommands: ['npm install -g artillery@latest', 'export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain digitalxtian-com --domain-owner 964108025908 --query authorizationToken --output text --region us-east-1`'],
-      commands: ['npm install -g npm@latest', 'npm ci', `artillery run test/${props.loadTestName}`],
+      installCommands: ['npm install -g artillery@latest'],
+      commands: [`artillery run test/${props.loadTestName}`],
       rolePolicyStatements: [
         new PolicyStatement({
             actions: ['sts:AssumeRole'],
