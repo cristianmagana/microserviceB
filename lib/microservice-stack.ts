@@ -8,7 +8,6 @@ import { UatStage } from "./uatStage";
 import { ProdStage } from "./prodStage";
 import { BuildSpec, ComputeType, LinuxBuildImage, ReportGroup } from "aws-cdk-lib/aws-codebuild";
 import { CodeBuildStep, CodePipelineSource } from "aws-cdk-lib/pipelines";
-import { CodeBuildAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
 export class MicroserviceBStack extends Stack {
@@ -55,11 +54,8 @@ export class MicroserviceBStack extends Stack {
         new ProdStage(this, `prod-stage-${prodEnv.env.region}`, { ...prodEnv })
       );
 
-    const loadTestReportGroup = new ReportGroup(scope, "LoadTestReportGroup", {});
+    const loadTestReportGroup = new ReportGroup(this, `LoadTestReportGroup-${props.env.region}`, {});
     const loadBuildTest = new CodeBuildStep(`${props.name}-load-testing-step`, {
-      input: CodePipelineSource.connection(`${props.ghRepository}`, 'master', {
-          connectionArn: props.codeStarConnectionArn,
-      }),
       installCommands: ['npm install -g artillery@latest'],
       commands: ['npm install -g npm@latest', 'npm ci', `artillery run test/${props.loadTestName}`],
       rolePolicyStatements: [
