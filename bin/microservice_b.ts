@@ -114,7 +114,8 @@ const codeArtifactConfig: CodeArtifactProps = {
 };
 
 export type ApplicationProps = EnvironmentConfig &
-  PipelineAppProps & {
+  PipelineAppProps &
+  LoadTestingProp & {
     environments: MicroServiceProps[];
     codeStarConnectionArn: string;
   };

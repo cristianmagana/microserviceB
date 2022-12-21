@@ -17,6 +17,8 @@ export class MicroserviceBStack extends Stack {
         ghRepository: "cristianmagana/microserviceB",
         codeArtifactDomain: props.codeArtifactDomain,
         codeArtifactRepo: props.codeArtifactRepo,
+        loadTestName: "loadtest.yaml",
+        activateLambdaLoadTestings: true,
         env: {
           name: props.env.name,
           account: props.env.account,
@@ -26,29 +28,29 @@ export class MicroserviceBStack extends Stack {
       });
 
     const devEnvs = props.environments.filter(
-      environments => environments.env.name === "dev"
+      (environments) => environments.env.name === "dev"
     );
     for (const devEnv of devEnvs)
       devEnvironment.addStage(
-        new DevStage(this, `dev-stage-${devEnv.env.region}`, {...devEnv})
+        new DevStage(this, `dev-stage-${devEnv.env.region}`, { ...devEnv })
       );
 
     const uatEnvs = props.environments.filter(
-      environments => environments.env.name === "uat"
+      (environments) => environments.env.name === "uat"
     );
     for (const uatEnv of uatEnvs)
       uatEnvironment.addStage(
-        new UatStage(this, `uat-stage-${uatEnv.env.region}`, {...uatEnv})
+        new UatStage(this, `uat-stage-${uatEnv.env.region}`, { ...uatEnv })
       );
 
     const prodEnvs = props.environments.filter(
-      environments => environments.env.name === "prod"
+      (environments) => environments.env.name === "prod"
     );
     for (const prodEnv of prodEnvs)
       prodEnvironment.addStage(
-        new ProdStage(this, `prod-stage-${prodEnv.env.region}`, {...prodEnv})
+        new ProdStage(this, `prod-stage-${prodEnv.env.region}`, { ...prodEnv })
       );
 
-      pipeline.buildPipeline();
+    pipeline.buildPipeline();
   }
 }
