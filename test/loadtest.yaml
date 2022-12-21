@@ -1,16 +1,9 @@
 config:
   target: "https://2gc3roat3j.execute-api.us-east-1.amazonaws.com/prod"
   phases:
-    - duration: 60
+    - duration: 15
       arrivalRate: 5
       name: Warm up
-    - duration: 60
-      arrivalRate: 5
-      rampTo: 50
-      name: Ramp up load
-    - duration: 120
-      arrivalRate: 50
-      name: Sustained load
 
 scenarios:
   - name: "Search and buy"

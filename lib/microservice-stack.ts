@@ -1,14 +1,10 @@
-import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { createPipeline } from "@digitalxtian/aws-cdk-pipeline";
+import { createPipeline, createLoadTest } from "@digitalxtian/aws-cdk-pipeline";
 import { ApplicationProps } from "../bin/microservice_b";
 import { Stack } from "aws-cdk-lib";
 import { DevStage } from "./devStage";
 import { UatStage } from "./uatStage";
 import { ProdStage } from "./prodStage";
-import { BuildSpec, ComputeType, LinuxBuildImage, ReportGroup } from "aws-cdk-lib/aws-codebuild";
-import { CodeBuildStep, CodePipelineSource } from "aws-cdk-lib/pipelines";
-import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
 export class MicroserviceBStack extends Stack {
   constructor(scope: Construct, id: string, props: ApplicationProps) {
@@ -38,6 +34,12 @@ export class MicroserviceBStack extends Stack {
         new DevStage(this, `dev-stage-${devEnv.env.region}`, { ...devEnv })
       );
 
+    const loadTestBuild = createLoadTest(this, `${props.env.region}`, {
+      loadTestName: "loadtest.yaml",
+    });
+
+    devEnvironment.addPost(loadTestBuild);
+
     const uatEnvs = props.environments.filter(
       (environments) => environments.env.name === "uat"
     );
@@ -53,54 +55,6 @@ export class MicroserviceBStack extends Stack {
       prodEnvironment.addStage(
         new ProdStage(this, `prod-stage-${prodEnv.env.region}`, { ...prodEnv })
       );
-
-    const loadTestReportGroup = new ReportGroup(this, `LoadTestReportGroup-${props.env.region}`, {});
-    const loadBuildTest = new CodeBuildStep(`${props.name}-load-testing-step`, {
-      installCommands: ['npm install -g artillery@latest'],
-      commands: [`artillery run test/${props.loadTestName}`],
-      rolePolicyStatements: [
-        new PolicyStatement({
-            actions: ['sts:AssumeRole'],
-            resources: ['*'],
-            conditions: {
-                StringEquals: {
-                    'iam:ResourceTag/aws-cdk:bootstrap-role': 'lookup',
-                },
-            },
-        }),
-        new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-                'codeartifact:GetAuthorizationToken',
-                'codeartifact:ReadFromRepository',
-                'codeartifact:GetRepositoryEndpoint',
-                'codeartifact:PublishPackageVersion',
-            ],
-            resources: ['*'],
-        }),
-        new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: ['sts:GetServiceBearerToken'],
-            resources: ['*'],
-        }),
-    ],
-      buildEnvironment: {
-        computeType: ComputeType.SMALL,
-        buildImage: LinuxBuildImage.STANDARD_6_0,
-        privileged: true,
-    },
-      primaryOutputDirectory: 'cdk.out',
-      partialBuildSpec: BuildSpec.fromObject({
-          version: '0.2',
-          reports: {
-              [loadTestReportGroup.reportGroupArn]: {
-                  files: ['reports/*'],
-              },
-          },
-      }),
-  });
-
-    devEnvironment.addPost(loadBuildTest);
 
     pipeline.buildPipeline();
   }
