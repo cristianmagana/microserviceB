@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { MicroserviceBStack } from "../lib/microservice_b-stack";
+import { MicroserviceBStack } from "../lib/microservice-stack";
 
 const app = new cdk.App();
 
