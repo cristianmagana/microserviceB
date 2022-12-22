@@ -5,6 +5,9 @@ import { Stack } from "aws-cdk-lib";
 import { DevStage } from "./devStage";
 import { UatStage } from "./uatStage";
 import { ProdStage } from "./prodStage";
+import { BuildSpec, ComputeType, LinuxBuildImage, ReportGroup } from "aws-cdk-lib/aws-codebuild";
+import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { CodeBuildStep } from "aws-cdk-lib/pipelines";
 
 export class MicroserviceBStack extends Stack {
   constructor(scope: Construct, id: string, props: ApplicationProps) {
@@ -34,9 +37,60 @@ export class MicroserviceBStack extends Stack {
         new DevStage(this, `dev-stage-${devEnv.env.region}`, { ...devEnv })
       );
 
-    const loadTestBuild = createLoadTest(this, `${props.env.region}`, {
-      loadTestName: "loadtest.yaml",
-    });
+      const loadTestReportGroup = new ReportGroup(this, `${id}-report-group`, {});
+
+      const loadTestBuild = new CodeBuildStep(`${id}-load-testing-step`, {
+          installCommands: ['npm install -g artillery@latest'],
+          commands: [
+              'pwd',
+              'ls -la',
+              `artillery run test/${props.loadTestName} -o test/load-test-${process.env.CODEBUILD_BUILD_NUMBER}.json`,
+              'cd test',
+              'ls -la',
+          ],
+          rolePolicyStatements: [
+              new PolicyStatement({
+                  actions: ['sts:AssumeRole'],
+                  resources: ['*'],
+                  conditions: {
+                      StringEquals: {
+                          'iam:ResourceTag/aws-cdk:bootstrap-role': 'lookup',
+                      },
+                  },
+              }),
+              new PolicyStatement({
+                  effect: Effect.ALLOW,
+                  actions: [
+                      'codebuild:CreateReportGroup',
+                      'codebuild:CreateReport',
+                      'codebuild:UpdateReport',
+                      'codebuild:BatchPutTestCases',
+                      'codebuild:BatchPutCodeCoverages',
+                  ],
+                  resources: ['*'],
+              }),
+              new PolicyStatement({
+                  effect: Effect.ALLOW,
+                  actions: ['sts:GetServiceBearerToken'],
+                  resources: ['*'],
+              }),
+          ],
+          buildEnvironment: {
+              computeType: ComputeType.SMALL,
+              buildImage: LinuxBuildImage.STANDARD_6_0,
+              privileged: true,
+          },
+          primaryOutputDirectory: 'cdk.out',
+          partialBuildSpec: BuildSpec.fromObject({
+              version: '0.2',
+              reports: {
+                  [loadTestReportGroup.reportGroupArn]: {
+                      files: ['**/*'],
+                      'base-directory': 'test',
+                  },
+              },
+          }),
+      });
 
     devEnvironment.addPost(loadTestBuild);
 
