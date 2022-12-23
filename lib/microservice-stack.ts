@@ -39,7 +39,7 @@ export class MicroserviceBStack extends Stack {
       `${props.env.name}-${props.env.region}`,
       {
         loadTestName: "loadtest.yaml",
-        bucketName: `${props.name}-${props.env.region}-load-test`,
+        bucketName: `microservice-${props.env.region}-load-test`,
       }
     );
 
