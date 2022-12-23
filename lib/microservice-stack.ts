@@ -5,14 +5,6 @@ import { Stack } from "aws-cdk-lib";
 import { DevStage } from "./devStage";
 import { UatStage } from "./uatStage";
 import { ProdStage } from "./prodStage";
-import {
-  BuildSpec,
-  ComputeType,
-  LinuxBuildImage,
-  ReportGroup,
-} from "aws-cdk-lib/aws-codebuild";
-import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { CodeBuildStep } from "aws-cdk-lib/pipelines";
 
 export class MicroserviceBStack extends Stack {
   constructor(scope: Construct, id: string, props: ApplicationProps) {
